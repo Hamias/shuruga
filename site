@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Диагностика клиентского опыта: Сравнительный анализ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .aspect-ratio-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+        }
+        .presentation-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .slide {
+            display: none;
+            flex-grow: 1;
+            background-color: white;
+            padding: 2vw 3.5vw;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            position: relative;
+            flex-direction: column;
+        }
+        .slide.active {
+            display: flex;
+        }
+        .slide-header {
+            flex-shrink: 0;
+            margin-bottom: 2vh;
+        }
+        .slide-title {
+             font-size: 1.6vw;
+             font-weight: 700;
+             color: #0b5394;
+        }
+        .slide-title span {
+            color: #333;
+        }
+        .slide-content {
+            flex-grow: 1;
+            display: flex;
+            gap: 3%;
+            align-items: flex-start;
+            padding-top: 1vh;
+        }
+        .slide-footer {
+            position: absolute;
+            bottom: 1.5vh;
+            left: 3.5vw;
+            right: 3.5vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75vw;
+            color: #222;
+            font-weight: 600;
+        }
+        .footer-logo {
+            font-weight: 800;
+            font-size: 1vw;
+            letter-spacing: 0.05em;
+        }
+         .footer-center {
+            text-align: center;
+        }
+        .chart-container {
+            width: 45%;
+        }
+        .text-container {
+            width: 55%;
+            padding-left: 2%;
+        }
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 2vh;
+            margin-top: 2vh;
+        }
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 1vw;
+            min-height: 4vh;
+        }
+        .bar-label {
+            text-align: right;
+            font-size: 0.9vw;
+            color: #444;
+            flex-basis: 35%;
+            line-height: 1.2;
+            flex-shrink: 0;
+        }
+        .bar-wrapper {
+            flex-grow: 1;
+            background-color: #f3f3f3;
+            height: 1.8vh;
+            position: relative;
+        }
+        .bar {
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+        }
+         .bar-value {
+            font-size: 1.1vw;
+            font-weight: 700;
+            color: #000;
+            flex-basis: 10%;
+            text-align: left;
+        }
+        .good { background-color: #93c47d; }
+        .norm { background-color: #ffd966; }
+        .bad { background-color: #e06666; }
+
+        .conclusions-title {
+            font-weight: 700;
+            font-size: 1.2vw;
+            color: #333;
+            margin-bottom: 1.5vh;
+        }
+         .conclusions-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .conclusions-list li {
+            font-size: 0.95vw;
+            color: #333;
+            margin-bottom: 1.5vh;
+            line-height: 1.4;
+        }
+        .conclusions-list .biz-effect {
+            font-weight: bold;
+            color: #000;
+        }
+        .quote {
+            margin-top: 2vh;
+            padding-left: 1.5vw;
+            border-left: 3px solid #ffd966;
+            font-style: italic;
+            font-size: 0.9vw;
+            color: #555;
+        }
+        .legend {
+            display: flex;
+            gap: 1vw;
+            font-size: 0.8vw;
+            margin-bottom: 1.5vh;
+            align-self: flex-start;
+        }
+        .legend-item { display: flex; align-items: center; gap: 0.3vw; }
+        .legend-color { width: 1vw; height: 1vw; }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            min-height: 30vh;
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0aec0;
+            font-size: 1vw;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .summary-column h3 {
+             font-size: 1.1vw;
+             font-weight: 700;
+             margin-bottom: 1.5vh;
+        }
+        .summary-column ul li {
+            font-size: 0.9vw;
+            line-height: 1.4;
+            margin-bottom: 1vh;
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="aspect-ratio-container">
+            <div class="presentation-frame">
+
+                <!-- SLIDE 1: Title -->
+                <div id="slide-1" class="slide active items-center justify-center text-center" style="background-color: #3d3d3d;">
+                    <div>
+                        <h1 class="text-5xl font-extrabold text-white" style="font-size: 3vw;">Диагностика клиентского опыта</h1>
+                        <h2 class="text-2xl text-slate-300 mt-4" style="font-size: 1.8vw; font-weight: 600;">Сравнительный анализ медицинских клиник</h2>
+                         <p class="mt-12 text-slate-400" style="font-size: 1.2vw;">Ezgu Niyat / Doctor D. / Akfa Medline</p>
+                    </div>
+                </div>
+
+                <!-- SLIDE 2: MedSearch Intro -->
+                <div id="slide-2" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2.5vw;">Анализ по индексу<br>MedSearch</h1>
+                </div>
+                
+                <!-- SLIDE 3: Overall Rating -->
+                <div id="slide-3" class="slide">
+                     <div class="slide-header">
+                        <h2 class="slide-title" style="color:#333; font-size: 2vw;">Итоговый рейтинг клиник по индексу MedSearch</h2>
+                        <p class="text-slate-600 mt-2" style="font-size:1.1vw;">Средняя оценка по всем этапам клиентского пути</p>
+                    </div>
+                    <div class="slide-content flex-col justify-around">
+                        <div class="grid grid-cols-3 gap-8">
+                            <div class="text-center p-6 bg-white border-t-8 border-green-500 rounded-lg shadow-xl">
+                                <p class="text-2xl font-bold text-green-600">1 МЕСТО</p>
+                                <p class="text-xl font-semibold text-slate-800 mt-2">Doctor D.</p>
+                                <p class="text-5xl font-bold text-slate-900 my-4">3.36<span class="text-3xl text-slate-500">/5</span></p>
+                                <p class="text-slate-600 text-sm">Лидер по большинству этапов благодаря сильному бренду, премиальной атмосфере и стабильному сервису.</p>
+                            </div>
+                            <div class="text-center p-6 bg-white border-t-8 border-amber-400 rounded-lg shadow-xl">
+                                <p class="text-2xl font-bold text-amber-500">2 МЕСТО</p>
+                                <p class="text-xl font-semibold text-slate-800 mt-2">Akfa Medline</p>
+                                <p class="text-5xl font-bold text-slate-900 my-4">2.84<span class="text-3xl text-slate-500">/5</span></p>
+                                <p class="text-slate-600 text-sm">Функциональный цифровой опыт, но общее впечатление страдает из-за "уставшей" среды и безразличного сервиса.</p>
+                            </div>
+                            <div class="text-center p-6 bg-white border-t-8 border-red-500 rounded-lg shadow-xl">
+                                <p class="text-2xl font-bold text-red-600">3 МЕСТО</p>
+                                <p class="text-xl font-semibold text-slate-800 mt-2">Ezgu Niyat</p>
+                                <p class="text-5xl font-bold text-slate-900 my-4">2.74<span class="text-3xl text-slate-500">/5</span></p>
+                                <p class="text-slate-600 text-sm">Ключевой актив — врачи, но их работа нивелируется критическими провалами на всех сервисных этапах.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 3</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <!-- SLIDE 4: Summary Journey -->
+                <div id="slide-4" class="slide">
+                     <div class="slide-header">
+                        <h2 class="slide-title"><span>Опыт пациента неконсистентен, резко падает до и после визита к врачу</span></h2>
+                        <p class="text-slate-600 mt-2" style="font-size:0.95vw;">Диаграмма наглядно демонстрирует, что пик удовлетворенности приходится на взаимодействие с врачом. Все<br> поддерживающие этапы - цифровые и административные - показывают низкие результаты.</p>
+                    </div>
+                    <div class="slide-content flex-col justify-center">
+                         <div class="w-full">
+                            <canvas id="summaryJourneyChart" style="height: 55vh;"></canvas>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 4</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <!-- SLIDES FOR Ezgu Niyat -->
+                <div id="slide-5" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2vw;">1. MedSearch: Ezgu Niyat</h1>
+                </div>
+
+                <div id="slide-6" class="slide">
+                     <div class="slide-header">
+                        <h2 class="slide-title">Сайт теряет клиентов еще до звонка <span>(2.3 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                             <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Удобство и<br>простота навигации</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Информативность<br>и ценность</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Процесс<br>онлайн-записи</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Мобильная<br>адаптация</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Общее<br>впечатление</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                            <h3 class="conclusions-title">Выводы</h3>
+                            <ul class="conclusions-list">
+                                <li>Сайт не выполняет базовых бизнес-функций. Низкие оценки по критериям «Онлайн-запись» (2.0) и «Информативность» (2.0) означает, что клиенты не могут ни записаться, ни получить нужную информацию.</li>
+                                <li>Информация неактуальна и вводит в заблуждение. Это подрывает доверие и профессиональный имидж клиники.</li>
+                                <div class="quote"><p>"Из 24 указанных на сайте врачей, информация дана только о 6... по 3 врачам представлена одинаковая информация... о хирурге, которого в клинике нет".</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Прямая потеря дохода, формирование имиджа технологически отсталой компании, усложнение работы колл-центра.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 6</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-7" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Колл-центр работает как регистратура <span>(2.7 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                              <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Вежливость и<br>деловой этикет</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Эмпатия и<br>установление контакта</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Компетентность<br>и информирование</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Проактивность и<br>выявление потребности</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Эффективность<br>и скорость записи</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Сотрудники занимают пассивную, реактивную позицию. Самые низкие оценки у «Эффективности записи» (2.0) и «Проактивности» (2.5). Операторы не консультируют, а лишь механически обрабатывают запрос.</li>
+                                <li>Информация, предоставляемая оператором, не всегда точна, что создает путаницу и недоверие.</li>
+                                <div class="quote"><p>"На просьбу записать на приём к неврологу, ответила: 'В клинике живая очередь...'", что оказалось не совсем так, так как у врачей есть график.</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Риск записи не к тому специалисту, упущенная возможность произвести положительное первое впечатление и продать более релевантную услугу.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 7</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-8" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Регистратура выполняет функции, но не создает ценности <span>(3.1 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Атмосфера и<br>первое впечатление</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="70%"></div></div><div class="bar-value">3.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Скорость и<br>эффективность</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="70%"></div></div><div class="bar-value">3.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Качество<br>коммуникации</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="70%"></div></div><div class="bar-value">3.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Финансовая<br>прозрачность</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Стрессоустойчивость<br>и решение проблем</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Ресепшн - самый стабильный из сервисных этапов, но лишенный проактивности. Опыт остается стандартным и незапоминающимся.</li>
+                                <li>Ключевая точка недовольства - финансовая непрозрачность (2.5) и низкая стрессоустойчивость (2.5). Стоимость услуг не разъясняется, а нестандартные ситуации вызывают у персонала трудности.</li>
+                                <div class="quote"><p>"Регистратор выписала чек на консультацию без каких-либо объяснений и просила оплатить в кассу до приёма врача."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Отсутствие "wow-эффекта", который формирует лояльность. Риск возникновения финансовых споров и негативных отзывов.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 8</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+                
+                <div id="slide-9" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Врач — главный актив и точка роста доверия <span>(3.4 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                           <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Контакт и<br>эмпатия</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Понятность и<br>вовлечение</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="70%"></div></div><div class="bar-value">3.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Обстановка и<br>гигиена</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="70%"></div></div><div class="bar-value">3.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Завершение<br>приема</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="70%"></div></div><div class="bar-value">3.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Обоснование<br>плана лечения</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                            <h3 class="conclusions-title">Выводы</h3>
+                            <ul class="conclusions-list">
+                               <li>Врачи - ядро ценностного предложения клиники. Они демонстрируют высокий уровень эмпатии, профессионализма и умения выстроить доверительные отношения (оценка «Контакт и эмпатия» 4.0).</li>
+                               <li>Зона роста: «Обоснование плана лечения» (2.5) может быть более убедительным, с фокусом на ценность для пациента, а не просто на перечисление анализов.</li>
+                               <div class="quote"><p>"С врачом сразу установился доверительный контакт. Выслушала мои 'жалобы', задала несколько уточняющих вопросов."</p></div>
+                               <li class="biz-effect">Бизнес-последствия: Сильная врачебная команда является фундаментом для роста. Необходимо срочно усилить поддерживающие процессы, чтобы не обесценивать их работу.</li>
+                           </ul>
+                        </div>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 9</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-10" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">После визита пациент остается один на один с проблемой <span>(2.3 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                            <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Вероятность<br>рекомендации (NPS)</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Итоговая<br>ценность</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Получение<br>результатов</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Бесшовность<br>пути</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Система<br>лояльности</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="20%"></div></div><div class="bar-value">1.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Клиентский путь «разорван». Нет связи между этапами. Пациенту приходится самому быть координатором своего лечения.</li>
+                                <li>Процесс получения результатов непрозрачен и неудобен. Клиника не проявляет инициативу и не сопровождает пациента после оказания услуги.</li>
+                                <li>Полное отсутствие системы удержания (оценка 1.0) - это прямая упущенная возможность для генерации повторных визитов.</li>
+                                <div class="quote"><p>"После приёма... спросил: 'Повторная консультация после МРТ платная или бесплатная?' Был получен ответ: 'Бесплатная'. Каких-либо дополнений... не было."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Снижение лояльности, созданной врачом. Низкая вероятность возврата пациента. Потеря LTV.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 10</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <!-- NEW SUMMARY SLIDE FOR EZGU NIYAT -->
+                <div id="slide-11" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title" style="color: #333; font-size: 1.8vw;">Сильные врачи компенсируют разрывы в сервисе клиники</h2>
+                        <p class="text-slate-600 mt-2" style="font-size:0.95vw;">
+                            Исследование показало, что клиника обладает ключевым активом — высокопрофессиональными врачами (оценка 3.4/5.0), формирующими доверие. Однако их усилия сводятся на нет из-за критических провалов в цифровом взаимодействии и сопровождении после визита, где средняя оценка падает до 2.3 из 5.0.
+                        </p>
+                    </div>
+                    <div class="slide-content mt-4">
+                        <div class="w-1/2 pr-4 border-r-2 border-gray-200 summary-column">
+                            <h3 style="color: #6aa84f;">Фундамент для роста</h3>
+                            <ul>
+                                <li><span class="font-bold">Врачебная экспертиза:</span> Пациенты высоко оценивают эмпатию и профессионализм врачей, что является основой для построения долгосрочных отношений.</li>
+                            </ul>
+                        </div>
+                        <div class="w-1/2 pl-6 summary-column">
+                            <h3 style="color: #cc0000;">Критические барьеры</h3>
+                            <ul>
+                                <li><span class="font-bold">«Сломанный» клиентский путь:</span> Пациент остается «брошенным» после визита, что влияет на лояльность и снижает вероятность повторных обращений.</li>
+                                <li><span class="font-bold">Неэффективный сайт:</span> «Цифровое лицо» клиники не привлекает, а отталкивает клиентов, не выполняя базовых функций.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 11</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+
+                <!-- SLIDES FOR Doctor D -->
+                <div id="slide-12" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2vw;">2. MedSearch: Doctor D.</h1>
+                </div>
+
+                 <div id="slide-13" class="slide">
+                     <div class="slide-header">
+                        <h2 class="slide-title">Сайт формирует доверие и привлекает <span>(3.8 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Удобство и<br>простота навигации</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Информативность<br>и ценность</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Мобильная<br>адаптация</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Общее<br>впечатление</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Процесс<br>онлайн-записи</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                            <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Сайт формирует доверие и эффективно привлекает целевую аудиторию. Высокие оценки (4.0) по всем ключевым параметрам — навигация, информативность, адаптация — подтверждают его качество.</li>
+                                <li>Процесс записи через Telegram воспринимается как стандартный, но рабочий.</li>
+                                 <div class="quote"><p>"Сайт интуитивно понятен, информация об услугах есть, хорошо адаптирован и вызывает доверие."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Высокая конверсия из посетителя в лида. Укрепление имиджа премиальной и современной клиники. Снижение нагрузки на колл-центр.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 13</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-14" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Колл-центр компетентен, но не проактивен <span>(3.2 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Эмпатия и<br>установление контакта</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Вежливость и<br>деловой этикет</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Компетентность<br>и информирование</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Проактивность и<br>выявление потребности</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Эффективность<br>и скорость записи</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Колл-центр работает в реактивном режиме, упуская возможности для создания дополнительной ценности.</li>
+                                <li>Сотрудник проявляет участие (Эмпатия 4.0), но не проявляет инициативы в выявлении потребностей (Проактивность 3.0).</li>
+                                <div class="quote"><p>"Со стороны сотрудника не было проактивности, просто ответили на вопросы."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Упущенные возможности для допродажи услуг и формирования более глубоких отношений с пациентом. Риск, что пациент с нечетким запросом не получит оптимального решения.</li>
+                            </ul>
+                        </div>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 14</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-15" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Премиальная атмосфера и быстрый сервис <span>(3.8 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Атмосфера и<br>первое впечатление</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="100%"></div></div><div class="bar-value">5.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Скорость и<br>эффективность</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Финансовая<br>прозрачность</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Качество<br>коммуникации</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Стрессоустойчивость<br>и решение проблем</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Атмосфера — ключевое преимущество клиники. Максимальная оценка (5.0) говорит о полном соответствии ожиданиям премиум-сегмента.</li>
+                                <li>Обслуживание на ресепшн быстрое, эффективное и финансово прозрачное, что укрепляет доверие.</li>
+                            </ul>
+                             <div class="quote"><p>"Создается впечатление, будто клиника где-то заграницей. Стильный дизайн, приятно находиться."</p></div>
+                             <li class="biz-effect">Бизнес-последствия: Сильное положительное первое впечатление, которое оправдывает премиальное ценообразование и формирует лояльность.</li>
+                        </div>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 15</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-16" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Компетентный врач, стандартный подход <span>(3.2 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                            <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                           <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Понятность<br>объяснений</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Контакт и<br>эмпатия</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Обстановка и<br>гигиена</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Обоснование<br>плана лечения</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Завершение<br>приема</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                            <h3 class="conclusions-title">Выводы</h3>
+                            <ul class="conclusions-list">
+                               <li>Консультация прошла приятно, врач все объяснил (Понятность 4.0) и выслушал пациента.</li>
+                               <li>Несмотря на компетентность, прием ощущается "стандартным". Оценки по эмпатии, обстановке и назначениям (3.0) говорят об отсутствии персонализированного подхода, ожидаемого в премиум-сегменте.</li>
+                               <div class="quote"><p>"Врач все объяснил и выслушал... Стандартные назначения. В общих чертах описал дальнейшие шаги."</p></div>
+                               <li class="biz-effect">Бизнес-последствия: Пациент получает качественную консультацию, но без "вау-эффекта". Отсутствие персонализированного подхода может снизить долгосрочную лояльность.</li>
+                           </ul>
+                        </div>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 16</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-17" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Путь гладкий, но удержание отсутствует <span>(2.8 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                            <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Итоговая<br>ценность</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Бесшовность<br>пути</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Получение<br>результатов</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Вероятность<br>рекомендации (NPS)</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Система<br>лояльности</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="20%"></div></div><div class="bar-value">1.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Клиентский путь ощущается гладким и технологичным (получение результатов через бот). Итоговая ценность визита высокая (4.0).</li>
+                                <li>Критический провал — полное отсутствие системы удержания (оценка 1.0). Клиника не предпринимает никаких действий для стимулирования повторных визитов.</li>
+                                <div class="quote"><p>"Результаты через бот... не было речи [о системе лояльности]."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Высокая удовлетворенность от визита, но упущенная возможность для стимулирования повторных обращений и увеличения LTV. В премиум-сегменте это недопустимо.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 17</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <!-- NEW SUMMARY SLIDE FOR DOCTOR D -->
+                <div id="slide-18" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title" style="color: #333; font-size: 1.8vw;">Целостный премиальный опыт с зоной роста в удержании</h2>
+                        <p class="text-slate-600 mt-2" style="font-size:0.95vw;">
+                            Doctor D. демонстрирует самый стабильный и качественный опыт (оценка 3.36/5.0), который соответствует премиальному позиционированию. Сильные стороны — цифровые каналы и физическая среда, которые создают доверие и комфорт.
+                        </p>
+                    </div>
+                    <div class="slide-content mt-4">
+                        <div class="w-1/2 pr-4 border-r-2 border-gray-200 summary-column">
+                            <h3 style="color: #6aa84f;">Фундамент для роста</h3>
+                            <ul>
+                                <li><span class="font-bold">Премиальная атмосфера и бренд:</span> Физическое окружение и цифровое присутствие создают целостное впечатление высокого класса.</li>
+                                <li><span class="font-bold">Стабильный сервис:</span> Все этапы, от звонка до визита, работают предсказуемо и эффективно, без явных провалов.</li>
+                            </ul>
+                        </div>
+                        <div class="w-1/2 pl-6 summary-column">
+                            <h3 style="color: #cc0000;">Критические барьеры</h3>
+                            <ul>
+                                <li><span class="font-bold">Реактивный сервис:</span> Персонал компетентен, но не проявляет проактивности в выявлении потребностей пациента.</li>
+                                <li><span class="font-bold">Отсутствие системы удержания:</span> Как и у конкурентов, полностью отсутствует работа с лояльностью, что является упущенной возможностью для премиум-сегмента.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 18</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <!-- SLIDES FOR Akfa Medline -->
+                <div id="slide-19" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2vw;">3. MedSearch: Akfa Medline</h1>
+                </div>
+
+                 <div id="slide-20" class="slide">
+                     <div class="slide-header">
+                        <h2 class="slide-title">Цифровой опыт функционален, но безлик <span>(3.4 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                           <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                           <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Процесс<br>онлайн-записи</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Мобильная<br>адаптация</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Удобство и<br>простота навигации</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="70%"></div></div><div class="bar-value">3.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Информативность<br>и ценность</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Общее<br>впечатление</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                            <h3 class="conclusions-title">Выводы</h3>
+                            <ul class="conclusions-list">
+                               <li>Процесс онлайн-записи (4.0) — самый удобный среди исследуемых клиник. Сайт хорошо адаптирован (4.0).</li>
+                               <li>Несмотря на функциональность, сайт воспринимается как "обычный" (Общее впечатление 3.0), не создает эмоциональной связи и не отражает премиальное позиционирование.</li>
+                               <div class="quote"><p>"Процесс очень удобен... Сайт обычный."</p></div>
+                               <li class="biz-effect">Бизнес-последствия: Клиенты могут легко записаться, но сайт не работает на усиление бренда и не создает эмоциональной привязанности, что снижает LTV.</li>
+                           </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 20</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-21" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Колл-центр работает "на автомате" <span>(2.6 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Вежливость и<br>деловой этикет</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Эмпатия и<br>установление контакта</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Компетентность<br>и информирование</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Проактивность и<br>выявление потребности</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Эффективность<br>и скорость записи</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Колл-центр демонстрирует безразличие к пациенту. Критически низкие оценки по проактивности и эффективности (2.0) говорят о полном отсутствии клиентоориентированности.</li>
+                                <li>Общение носит формальный, шаблонный характер. Нет попытки установить контакт или помочь.</li>
+                                <div class="quote"><p>"От сотрудников было нейтральное отношение к клиентам, работают на автомате. Проактивности от сотрудников не было."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Потеря клиентов на этапе первого звонка. Формирование негативного имиджа клиники, где не заботятся о пациентах, что полностью противоречит медицинской сфере.</li>
+                            </ul>
+                        </div>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 21</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-22" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">"Уставшая" атмосфера и формальный сервис <span>(2.8 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Скорость и<br>эффективность</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Качество<br>коммуникации</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Финансовая<br>прозрачность</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Атмосфера и<br>первое впечатление</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="50%"></div></div><div class="bar-value">2.5</div></div>
+                                <div class="bar-item"><div class="bar-label">Стрессоустойчивость<br>и решение проблем</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Атмосфера в клинике не соответствует премиальному позиционированию, низкая оценка (2.5) говорит о том, что помещение требует ремонта.</li>
+                                <li>Обслуживание стандартное, безразличное. Низкая стрессоустойчивость (2.0) персонала при нестандартных вопросах.</li>
+                                <div class="quote"><p>"Нейтральная обстановка, клиника требует косметического ремонта. Сотрудник формально ответил на вопросы."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Диссонанс между ожиданиями от сильного бренда и реальностью, что вызывает разочарование. Снижение готовности платить премиальную цену.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 22</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-23" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Внимательный врач, стандартные назначения <span>(3.2 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                            <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                           <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Контакт и<br>эмпатия</div><div class="bar-wrapper"><div class="bar good" style="width: 0%;" data-width="80%"></div></div><div class="bar-value">4.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Понятность<br>объяснений</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Обстановка и<br>гигиена</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Обоснование<br>плана лечения</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Завершение<br>приема</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                            <h3 class="conclusions-title">Выводы</h3>
+                            <ul class="conclusions-list">
+                               <li>Врач был внимателен и отнесся к консультации очень ответственно (Контакт и эмпатия 4.0).</li>
+                               <li>Несмотря на это, прием носит стандартный характер, назначения не выглядят персонализированными, что не соответствует ожиданиям от премиальной клиники.</li>
+                               <div class="quote"><p>"Врач был внимателен... назначения были стандартными."</p></div>
+                               <li class="biz-effect">Бизнес-последствия: Качественная консультация без "вау-эффекта". Этого может быть недостаточно для удержания на фоне слабого сервиса на других этапах.</li>
+                           </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 23</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-24" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Некомфортный путь и отсутствие заботы <span>(2.2 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="chart-container">
+                             <div class="legend">
+                                <div class="legend-item"><span class="legend-color good"></span><span>хороший результат</span></div>
+                                <div class="legend-item"><span class="legend-color norm"></span><span>норма</span></div>
+                                <div class="legend-item"><span class="legend-color bad"></span><span>требует внимания</span></div>
+                            </div>
+                            <div class="bar-chart">
+                                <div class="bar-item"><div class="bar-label">Получение<br>результатов</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Итоговая<br>ценность</div><div class="bar-wrapper"><div class="bar norm" style="width: 0%;" data-width="60%"></div></div><div class="bar-value">3.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Бесшовность<br>пути</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Вероятность<br>рекомендации (NPS)</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="40%"></div></div><div class="bar-value">2.0</div></div>
+                                <div class="bar-item"><div class="bar-label">Система<br>лояльности</div><div class="bar-wrapper"><div class="bar bad" style="width: 0%;" data-width="20%"></div></div><div class="bar-value">1.0</div></div>
+                            </div>
+                        </div>
+                        <div class="text-container">
+                             <h3 class="conclusions-title">Выводы</h3>
+                             <ul class="conclusions-list">
+                                <li>Клиентский путь после визита ощущается некомфортным и "разорванным" (Бесшовность 2.0).</li>
+                                <li>Пациент не чувствует заботы со стороны сотрудников. Это, вкупе с полным отсутствием системы лояльности (1.0), приводит к крайне низкой вероятности рекомендации (NPS 2.0).</li>
+                                <div class="quote"><p>"Клиентский путь был слегка некомфортный... не почувствовала заботы о пациенте со стороны сотрудников."</p></div>
+                                <li class="biz-effect">Бизнес-последствия: Высокий риск ухода клиента к конкурентам после первого визита. Положительное впечатление от врача нивелируется плохим пост-сервисом.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 24</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <!-- NEW SUMMARY SLIDE FOR AKFA MEDLINE -->
+                <div id="slide-25" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title" style="color: #333; font-size: 1.8vw;">Функциональный сервис, которому не хватает эмоций и заботы</h2>
+                        <p class="text-slate-600 mt-2" style="font-size:0.95vw;">
+                           Akfa Medline предоставляет функционально работающие процессы (оценка 2.84/5.0), особенно в цифровых каналах. Однако этот функционал не подкреплен качественным сервисом и комфортной средой, что создает разрыв с премиальным позиционированием.
+                        </p>
+                    </div>
+                    <div class="slide-content mt-4">
+                        <div class="w-1/2 pr-4 border-r-2 border-gray-200 summary-column">
+                            <h3 style="color: #6aa84f;">Фундамент для роста</h3>
+                            <ul>
+                                <li><span class="font-bold">Эффективные цифровые каналы:</span> Сайт и онлайн-запись являются самыми сильными и удобными среди конкурентов, что является хорошей базой для привлечения.</li>
+                            </ul>
+                        </div>
+                        <div class="w-1/2 pl-6 summary-column">
+                            <h3 style="color: #cc0000;">Критические барьеры</h3>
+                            <ul>
+                                <li><span class="font-bold">Безразличная культура сервиса:</span> Персонал работает "на автомате", без эмпатии и проактивности, что оставляет негативное впечатление.</li>
+                                <li><span class="font-bold">«Уставшая» физическая среда:</span> Состояние помещений не соответствует премиальному бренду и не создает атмосферу комфорта и заботы.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 25</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <!-- SLIDES FOR CEI -->
+                <div id="slide-26" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2.5vw;">Анализ по индексу<br>Customer Experience Index (CEI)</h1>
+                </div>
+
+                 <div id="slide-27" class="slide">
+                     <div class="slide-header">
+                        <h2 class="slide-title" style="color:#333; font-size: 2vw;">Итоговый рейтинг клиник по индексу CEI</h2>
+                        <p class="text-slate-600 mt-2" style="font-size:1.1vw;">Средняя оценка по 4 блокам: Бренд, Окружение, Предложение, Культура</p>
+                    </div>
+                    <div class="slide-content flex-col justify-around">
+                         <div class="grid grid-cols-3 gap-8">
+                            <div class="text-center p-6 bg-white border-t-8 border-green-500 rounded-lg shadow-xl">
+                                <p class="text-2xl font-bold text-green-600">1 МЕСТО</p>
+                                <p class="text-xl font-semibold text-slate-800 mt-2">Doctor D.</p>
+                                <p class="text-5xl font-bold text-slate-900 my-4">3.80<span class="text-3xl text-slate-500">/5</span></p>
+                                <p class="text-slate-600 text-sm">Абсолютный лидер по всем параметрам CEI. Бренд, среда и предложение работают синергично, создавая целостный премиальный опыт.</p>
+                            </div>
+                            <div class="text-center p-6 bg-white border-t-8 border-amber-400 rounded-lg shadow-xl">
+                                <p class="text-2xl font-bold text-amber-500">2 МЕСТО</p>
+                                <p class="text-xl font-semibold text-slate-800 mt-2">Akfa Medline</p>
+                                <p class="text-5xl font-bold text-slate-900 my-4">2.68<span class="text-3xl text-slate-500">/5</span></p>
+                                <p class="text-slate-600 text-sm">Сильный и узнаваемый бренд, но его восприятие подрывается слабой физической средой и безразличной культурой.</p>
+                            </div>
+                            <div class="text-center p-6 bg-white border-t-8 border-red-500 rounded-lg shadow-xl">
+                                <p class="text-2xl font-bold text-red-600">3 МЕСТО</p>
+                                <p class="text-xl font-semibold text-slate-800 mt-2">Ezgu Niyat</p>
+                                <p class="text-5xl font-bold text-slate-900 my-4">2.55<span class="text-3xl text-slate-500">/5</span></p>
+                                <p class="text-slate-600 text-sm">Самая большая проблема — полное отсутствие внятного ценностного предложения и размытый бренд. Окружение и культура на среднем уровне.</p>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 27</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-28" class="slide">
+                     <div class="slide-header">
+                        <h2 class="slide-title" style="color: #333">Восприятие бренда, среды и культуры</h2>
+                        <p class="text-slate-600 mt-2" style="font-size:0.95vw;">Сравнение клиник по ключевым блокам индекса CEI</p>
+                    </div>
+                    <div class="slide-content w-full">
+                        <canvas id="ceiChart"></canvas>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 28</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+                
+                 <!-- CEI Details: Ezgu Niyat -->
+                <div id="slide-29" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2vw;">2. CEI: Ezgu Niyat</h1>
+                </div>
+
+                <div id="slide-30" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Бренд: <span>Размытое позиционирование (2.5 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Нечеткое позиционирование:</span> Клиника воспринимается как "многопрофильная", без ярко выраженной специализации или уникального торгового предложения. Это затрудняет дифференциацию от конкурентов.</li>
+                                <li><span class="font-bold">Отсутствие ясного сообщения:</span> Нет четкого и последовательного месседжа, который бы доносил ценности бренда. Коммуникации на разных платформах (сайт, колл-центр, буклеты) не гармоничны.</li>
+                                <li><span class="font-bold">Стандартное оформление:</span> Внешний вид и внутреннее оформление клиники соответствуют базовым ожиданиям, но не создают запоминающегося образа и не транслируют уникальность бренда.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение брендинга Ezgu Niyat]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 30</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-31" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Окружение: <span>Функционально, но без эмоций (3.2 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                         <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Чистота и порядок:</span> Клиника поддерживает высокий уровень чистоты, что положительно отмечается пациентами.</li>
+                                <li><span class="font-bold">Нейтральная атмосфера:</span> Несмотря на чистоту, обстановка не вызывает ярких положительных эмоций. Она функциональна, но не создает ощущения особого комфорта или заботы.</li>
+                                <li><span class="font-bold">Отсутствие "Wow-эффекта":</span> Окружение позволяет комфортно находиться в клинике, но не мотивирует на повторное посещение и не является конкурентным преимуществом.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение окружения Ezgu Niyat]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 31</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-32" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Предложение: <span>Нет УТП и персонализации (1.8 / 5.0)</span></h2>
+                    </div>
+                     <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Отсутствие УТП:</span> Непонятно, в чем ключевое преимущество клиники. Цены и качество услуг воспринимаются как стандартные для рынка.</li>
+                                <li><span class="font-bold">Нет фокуса на ЦА:</span> Ценностное предложение не разделено на целевые аудитории, что делает его универсальным и непривлекательным.</li>
+                                <li><span class="font-bold">Отсутствие персонализации:</span> Нет предложений, которые можно было бы настроить под индивидуальные потребности пациента. Взаимодействие шаблонное.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                           <div class="photo-placeholder"><span>[Изображение материалов Ezgu Niyat]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 32</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+                
+                 <div id="slide-33" class="slide">
+                    <div class="slide-header">
+                        <h2 class="slide-title">Культура: <span>Нейтральное отношение (2.7 / 5.0)</span></h2>
+                    </div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Пассивный персонал:</span> Сотрудники вежливы, но не проявляют инициативы и заинтересованности. Отношение к пациенту в основном нейтральное.</li>
+                                <li><span class="font-bold">Не превосходят ожидания:</span> Нет заметного желания адаптироваться под пациента или предложить нечто большее, чем стандартный сервис.</li>
+                                <li><span class="font-bold">Отсутствие командного духа:</span> Не ощущается слаженности в работе персонала "первой линии", что влияет на общее восприятие сервиса.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение персонала Ezgu Niyat]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 33</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <!-- CEI Details: Doctor D -->
+                <div id="slide-34" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2vw;">3. CEI: Doctor D.</h1>
+                </div>
+
+                <div id="slide-35" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Бренд: <span>Четкое и премиальное позиционирование (4.0 / 5.0)</span></h2></div>
+                     <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Ясное позиционирование:</span> Бренд четко транслирует премиальность. Это видно как во внешнем оформлении, так и в коммуникациях.</li>
+                                <li><span class="font-bold">Гармоничность:</span> Все элементы бренда (визуал, тон голоса, материалы) соответствуют друг другу и создают целостное, доверительное восприятие.</li>
+                                <li><span class="font-bold">Актуальность и унификация:</span> Коммуникационные материалы актуальны и имеют единый стиль, что усиливает профессиональный имидж клиники.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение брендинга Doctor D]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 35</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-36" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Окружение: <span>Стильный дизайн, высокий комфорт (4.0 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">"Вау-эффект":</span> Среда является ключевым конкурентным преимуществом. Стильный дизайн, идеальная чистота и продуманная атмосфера создают впечатление зарубежной клиники.</li>
+                                <li><span class="font-bold">Высокий комфорт:</span> В помещении приятно находиться, все элементы продуманы для удобства пациента.</li>
+                                <li><span class="font-bold">Отличное состояние:</span> Помещения в идеальном состоянии, что полностью соответствует премиальному позиционированию.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение окружения Doctor D]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 36</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                 <div id="slide-37" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Предложение: <span>Ясная ценность для ЦА (4.0 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Четкий фокус на ЦА:</span> Предложение прозрачно и ясно ориентировано на целевую аудиторию (репродуктивное здоровье), что делает его цепляющим и релевантным.</li>
+                                <li><span class="font-bold">Высокая воспринимаемая ценность:</span> Предложение формирует высокую ценность, которая оправдывает премиальную стоимость услуг.</li>
+                                <li><span class="font-bold">Элементы персонализации:</span> Есть возможность настраивать компоненты внутри предложения, что повышает его привлекательность.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                           <div class="photo-placeholder"><span>[Изображение материалов Doctor D]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 37</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-38" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Культура: <span>Позитивная и вовлекающая (3.2 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                         <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Вовлеченность:</span> Культура компании вовлекает пациента во взаимодействие и формирует желание остаться с клиникой надолго.</li>
+                                <li><span class="font-bold">Позитивный настрой:</span> Общее настроение сотрудников позитивное, они доброжелательны друг к другу и к пациентам.</li>
+                                <li><span class="font-bold">Адаптивность:</span> Прослеживается желание адаптироваться под клиента и помочь в решении его вопросов.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                             <div class="photo-placeholder"><span>[Изображение персонала Doctor D]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 38</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+                
+                 <!-- CEI Details: Akfa Medline -->
+                <div id="slide-39" class="slide items-center justify-center" style="background-color: #f3f3f3;">
+                    <h1 class="text-4xl font-bold text-slate-700 text-center" style="font-size: 2vw;">4. CEI: Akfa Medline</h1>
+                </div>
+
+                 <div id="slide-40" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Бренд: <span>Сильный, но не хватает гармонии (3.4 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Высокая узнаваемость:</span> Бренд заметен и хорошо виден, внешнее оформление соответствует бренду.</li>
+                                <li><span class="font-bold">Нехватка целостности:</span> Есть ощущение, что "чего-то не хватает". Элементы бренда гармоничны, но не всегда достаточно представлены внутри (например, промо-материалы).</li>
+                                <li><span class="font-bold">Позитивное восприятие:</span> В целом, бренд воспринимается позитивно благодаря системе ценностей, которая располагает к диалогу.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение брендинга Akfa Medline]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 40</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-41" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Окружение: <span>Требует обновления (2.8 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Диссонанс с позиционированием:</span> Внешне клиника выглядит хорошо, но внутри помещение ощущается "устаревшим", что не соответствует премиальному бренду.</li>
+                                <li><span class="font-bold">Нейтральный комфорт:</span> Находиться в клинике комфортно, но нет желания оставаться надолго. Атмосфера не вызывает сильных эмоций.</li>
+                                <li><span class="font-bold">Недостатки в чистоте:</span> Есть недочеты в чистоте и порядке, что снижает общее впечатление от физической среды.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение окружения Akfa Medline]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 41</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-42" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Предложение: <span>Фокус на стоимость, нет персонализации (2.2 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Фокус на ЦА:</span> Предложения сформированы на основе изучения целевой аудитории (семейные, более взрослое поколение).</li>
+                                <li><span class="font-bold">Отсутствие персонализации:</span> Предложения стандартны, нет возможности кастомизации под нужды конкретного пациента.</li>
+                                <li><span class="font-bold">Непонятное ценообразование:</span> Структура предложения и ценообразования не совсем понятна, что вызывает недоверие. Цены воспринимаются как завышенные.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                           <div class="photo-placeholder"><span>[Изображение материалов Akfa Medline]</span></div>
+                        </div>
+                    </div>
+                    <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 42</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+
+                <div id="slide-43" class="slide">
+                    <div class="slide-header"><h2 class="slide-title">Культура: <span>Безразличная, не вовлекает (2.4 / 5.0)</span></h2></div>
+                    <div class="slide-content">
+                        <div class="text-container w-1/2">
+                            <h3 class="conclusions-title">Ключевые выводы</h3>
+                            <ul class="conclusions-list">
+                                <li><span class="font-bold">Шаблонное взаимодействие:</span> Интерес к пациенту не прослеживается, чувствуется шаблонное, формальное отношение "на автомате".</li>
+                                <li><span class="font-bold">Неслаженная команда:</span> Команда ведет себя не слаженно, роли и ответственность сотрудников неочевидны.</li>
+                                <li><span class="font-bold">Нейтральное впечатление:</span> Культура компании оставляет равнодушным, не создает эмоциональной связи и не мотивирует на продолжение взаимодействия.</li>
+                            </ul>
+                        </div>
+                         <div class="chart-container w-1/2">
+                            <div class="photo-placeholder"><span>[Изображение персонала Akfa Medline]</span></div>
+                        </div>
+                    </div>
+                     <div class="slide-footer">
+                        <div class="font-bold">DIGITAL TRANSFORMATION</div>
+                        <div class="footer-center">Interisegroup, 2025 | 43</div>
+                        <div class="footer-logo">INTERISE<span class="text-blue-600">GROUP</span></div>
+                    </div>
+                </div>
+                 <div id="slide-44" class="slide items-center justify-center text-center bg-slate-800">
+                     <h1 class="text-5xl font-bold text-white">Спасибо за внимание!</h1>
+                 </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between items-center mt-4">
+            <button id="prevBtn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-slate-300">
+                Назад
+            </button>
+            <div id="slideCounter" class="text-slate-600 font-medium">Слайд 1 из 44</div>
+            <button id="nextBtn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-slate-300">
+                Вперед
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slideCounter');
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        const ceiData = {
+            labels: ['Бренд', 'Окружение', 'Предложение', 'Культура'],
+            datasets: [
+                 { label: 'Ezgu Niyat', data: [2.5, 3.2, 1.8, 2.7], borderColor: '#e06666', backgroundColor: 'rgba(224, 102, 102, 0.2)'},
+                 { label: 'Doctor D.', data: [4.0, 4.0, 4.0, 3.2], borderColor: '#93c47d', backgroundColor: 'rgba(147, 196, 125, 0.2)'},
+                 { label: 'Akfa Medline', data: [3.4, 2.8, 2.2, 2.4], borderColor: '#ffd966', backgroundColor: 'rgba(255, 217, 102, 0.2)'}
+            ]
+        };
+        
+        const summaryJourneyData = {
+            labels: ['Сайт', 'Колл-центр', 'Регистратура', 'Врач', 'Клиентский путь'],
+            datasets: [
+                {
+                    label: 'Ezgu Niyat',
+                    data: [2.3, 2.7, 3.1, 3.4, 2.3],
+                    backgroundColor: '#e06666',
+                    borderColor: '#e06666',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Doctor D.',
+                    data: [3.8, 3.2, 3.8, 3.2, 2.8],
+                    backgroundColor: '#93c47d',
+                    borderColor: '#93c47d',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Akfa Medline',
+                    data: [3.4, 2.6, 2.8, 3.2, 2.2],
+                    backgroundColor: '#ffd966',
+                    borderColor: '#ffd966',
+                    borderWidth: 1
+                }
+            ]
+        };
+
+        let ceiChartInstance = null;
+        let summaryJourneyChartInstance = null;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+            slideCounter.textContent = `Слайд ${index + 1} из ${totalSlides}`;
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === totalSlides - 1;
+
+            const activeSlide = slides[index];
+            if (activeSlide) {
+                activeSlide.querySelectorAll('.bar').forEach(bar => {
+                    const width = bar.getAttribute('data-width');
+                    setTimeout(() => { bar.style.width = width; }, 100);
+                });
+            }
+            
+            if (activeSlide && activeSlide.id === 'slide-4' && !summaryJourneyChartInstance) {
+                 const ctx = document.getElementById('summaryJourneyChart').getContext('2d');
+                 summaryJourneyChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: summaryJourneyData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, position: 'top' } },
+                        scales: {
+                            y: { beginAtZero: true, max: 5, grid: { color: '#e0e0e0' }, ticks: { font: { size: 12, family: "'Open Sans', sans-serif" }} },
+                            x: { grid: { display: false }, ticks: { font: { size: 14, family: "'Open Sans', sans-serif" }} }
+                        }
+                    }
+                 });
+            }
+
+            if (activeSlide && activeSlide.id === 'slide-28' && !ceiChartInstance) {
+                const ctx = document.getElementById('ceiChart').getContext('2d');
+                ceiChartInstance = new Chart(ctx, { type: 'radar', data: ceiData, options: { responsive: true, maintainAspectRatio: false, elements: { line: { borderWidth: 3 } }, scales: { r: { beginAtZero: true, max: 5, pointLabels: { font: { size: 14, family: "'Open Sans', sans-serif" } }, grid: { color: '#ccc'}, angleLines: { color: '#ccc' } } }, plugins: { legend: { labels: { font: { size: 14, family: "'Open Sans', sans-serif" } } } } } });
+            }
+        }
+
+        prevBtn.addEventListener('click', () => { if (currentSlide > 0) showSlide(--currentSlide); });
+        nextBtn.addEventListener('click', () => { if (currentSlide < totalSlides - 1) showSlide(++currentSlide); });
+
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>
+
